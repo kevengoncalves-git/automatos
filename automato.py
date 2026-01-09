@@ -8,37 +8,29 @@ print("-"*50)
 print("Vamos formalizar o seu AFND")
 print("-"*50)
 
+def organizar_entrada(entrada):
+    elementos = entrada.split(",") #retira as vírgulas e cria um conjunto com os elementos
+    elementos_processados = list() #cria um conjunto vazio para armazenar os elementos
+    for elemento in elementos:
+        elemento = elemento.strip()
+        elementos_processados.append(elemento)
+    return elementos_processados
 
 alfabeto = input("Insira o alfabeto do seu autômato(separe os simbolos por vírgula): ")
+lista_simbolos = tuple(organizar_entrada(alfabeto))
 
-simbolos = set(alfabeto.split(",")) #retira as vírgulas e cria um conjunto com os símbolos
-lista_simbolos = set()#cria um conjunto vazio para armazenar os símbolos
-
-for simbolo in simbolos:
-    simbolo = simbolo.strip() #retira possiveis espaços em branco
-    lista_simbolos.add(simbolo)
-
-print("Seu alfabeto é: ", sorted(lista_simbolos))
-print()
+print(f"Seu alfabeto é: {lista_simbolos}\n")
 
 estados = input("Insira os estados do seu autômato(separe os estados por vírgula): ")
-estados = estados.split(",") #retira as vírgulas e cria uma lista com os estados
-lista_estados = set()
-for estado in estados:
-    estado = estado.strip() #retira possiveis espaços em branco
-    lista_estados.add(estado)
-print("Seus estados são: ", sorted(lista_estados))
+lista_estados = tuple(organizar_entrada(estados))
+
+print(f"Seus estados são: {lista_estados}\n")
 print()
 
 estados_finais = input("Insira os estados finais do seu autômato(separe os estados por vírgula): ")
-estados_finais = estados_finais.split(",") #retira as vírgulas e cria uma lista com os estados finais
-lista_estados_finais = set() #retira as vírgulas e cria um conjunto com os estados finais
+lista_estados_finais = tuple(organizar_entrada(estados_finais))
 
-for estado_final in estados_finais:
-    estado_final = estado_final.strip() #retira possiveis espaços em branco
-    lista_estados_finais.add(estado_final)
-
-print("Seus estados finais são: ", sorted(lista_estados_finais))
+print(f"Seus estados finais são: {lista_estados_finais}\n")
 
 estado_inicial = 'q0'
 
