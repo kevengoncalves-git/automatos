@@ -46,7 +46,7 @@ funcao_transicao = {}
 #Cria a estrutura inicial da função de transição
 for estado in sorted(lista_estados):
     funcao_transicao[estado] = { #estado como chave principal
-        simbolo: list() for simbolo in lista_simbolos #simbolos como chaves secundárias : valores vazios (listas)   
+        simbolo: list() for simbolo in sorted(lista_simbolos) #simbolos como chaves secundárias : valores vazios (listas)   
     }
 
 def inserir_transicao(estado_atual):
@@ -68,4 +68,5 @@ def inserir_transicao(estado_atual):
             funcao_transicao[estado_atual][simbolo] = destinos_processados #Anexa os destinos a chave secundaria
 
 inserir_transicao('q0')
+
 print(funcao_transicao)
