@@ -73,6 +73,43 @@ for estado, simbolo in funcao_transicao.items():
         print(f"Símbolo: {chave} | Destinos: {destinos}")
     print("-"*30)
 
+def percorre_afnd(estado_atual, palavra, cabeca_de_leitura, caminho):
+    if cabeca_de_leitura == len(palavra): #caso onde a cabeça de leitura alcança o final da palavra
+        print("Caminho:", " -> ".join(caminho)) #printa o caminho percorrido
+        if estado_atual in lista_estados_finais:
+            print(f"A palavra '{palavra}' é aceita pelo AFND! Estado final alcançado: '{estado_atual}'\n")
+            return True
+        else: #se chegar ao final da palavra e o estado atual não for final
+            print(f"A palavra '{palavra}' não é aceita neste caminho. Estado final: '{estado_atual}'\n")
+            return False
+
+    simbolo = palavra[cabeca_de_leitura] #recolhe um símbolo da palavra
+
+    #teste pra ver se o símbolo é válido
+    if simbolo not in lista_simbolos: 
+        print(f"Palavra inválida -> O símbolo '{simbolo}' na posição {cabeca_de_leitura} não pertence ao alfabeto do AFND.\n")
+        return False
+
+    #caminho bloqueado se o estado atual não tiver transições para o símbolo lido
+    #funcao_transicao[estado_atual] -> dicionário de transições do estado atual
+    if estado_atual not in funcao_transicao or simbolo not in funcao_transicao[estado_atual]:
+        print("Caminho:", " -> ".join(caminho), "(X)")
+        return False
+
+    aceita = False
+    estados_de_destino = funcao_transicao[estado_atual][simbolo]
+
+    # Explora recursivamente TODOS os estados de destino
+    for destino in estados_de_destino:
+        aceita = percorre_afnd(
+            destino,
+            palavra,
+            cabeca_de_leitura + 1, #avança a cabeça de leitura 
+            caminho + [destino] #atualiza o caminho percorrido
+        ) or aceita #se algum caminho aceitar a palavra, aceita será True
+
+    return aceita
+
 while True:
     resposta = input("Deseja verificar uma palavra no AFND? (s/n): ").strip().lower()
     if resposta == 'n':
@@ -82,30 +119,17 @@ while True:
         continue
 
     print("Iniciando verificação da palavra...\n")
-    palavra = input("Insira a palavra que deseja verificar no AFND: ")
+    palavra = input("Insira a palavra a ser verificada pelo AFND: ")
+    print("-"*50)
+    resultado = percorre_afnd(estado_inicial, palavra, 0, [estado_inicial])
 
-    estado_atual_lido = estado_inicial
-    estados_percorridos = [estado_atual_lido]
+    if resultado:
+        print("-"*50)
+        print(f"A palavra '{palavra}' é aceita pelo AFND (existe pelo menos um caminho válido).\n")
+    else:
+        print("-"*50)
+        print(f"A palavra '{palavra}' NÃO é aceita pelo AFND.\n")
 
-    for i, simbolo in enumerate(palavra):
-
-        if simbolo not in lista_simbolos:
-            print(f"A palavra é inválida! O símbolo '{simbolo}' na posição {i} não pertence ao alfabeto.")
-            break
-
-        cabeca_de_leitura = i
-        estados_de_destino = funcao_transicao[estado_atual_lido][simbolo]
-        estado_atual_lido = estados_de_destino[0] if estados_de_destino else None
-
-        estados_percorridos.append(estado_atual_lido)
-
-        if cabeca_de_leitura == len(palavra) - 1:
-            if estado_atual_lido in lista_estados_finais:
-                print(f"A palavra '{palavra}' é aceita pelo AFND! Estado final alcançado: '{estado_atual_lido}'")
-            else:
-                print(f"A palavra '{palavra}' é rejeitada pelo AFND! Estado final alcançado: '{estado_atual_lido}' não é um estado final.")
-        
-        print("Caminho até agora:", " -> ".join(estados_percorridos)) #caminho percorrido até o momento
 
 print("Obrigado por utilizar o conversor e validador de autômatos não determinísticos do Keven")
 
