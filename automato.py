@@ -133,3 +133,59 @@ while True:
 
 print("Obrigado por utilizar o conversor e validador de autômatos não determinísticos do Keven")
 
+def criar_funcao_transicao_afd(funcao_afnd, estado_inicial, lista_simbolos):
+
+    funcao_afd = dict()
+
+    # estado inicial do AFD é um conjunto
+    estado_inicial_afd = frozenset({estado_inicial})
+
+    estados_em_processamento = [estado_inicial_afd]
+    estados_processados = set()
+
+    funcao_afd[estado_inicial_afd] = dict()
+
+    while estados_em_processamento:
+        estado_atual = estados_em_processamento.pop(0) #estado_atual -> conjunto de estados
+
+        if estado_atual in estados_processados: #se o estado já foi processado -> passa pro próximo
+            continue
+
+        estados_processados.add(estado_atual) #adiciona o estado atual aos processados
+        funcao_afd.setdefault(estado_atual, dict()) #estado atual como chave de um dicionario 
+        #'setdefault' cria a chave se não existir
+
+        for simbolo in lista_simbolos: #pega os símbolos do AFND
+
+            novos_destinos = set()
+
+            for estado in estado_atual:
+                if simbolo in funcao_afnd.get(estado, {}): # testa se tem alguma transição pro símbolo
+                    novos_destinos.update(funcao_afnd[estado][simbolo]) #update pra adicionar os estados e não uma lista de estadps
+
+            novo_estado = frozenset(novos_destinos)
+
+            funcao_afd[estado_atual][simbolo] = novo_estado
+
+            if novo_estado not in estados_processados:
+                estados_em_processamento.append(novo_estado)
+
+    return funcao_afd
+
+funcao_transicao_afd = criar_funcao_transicao_afd(funcao_transicao, estado_inicial, lista_simbolos)
+
+print("\nFunção de Transição do AFD:\n")
+
+for estado, transicoes in funcao_transicao_afd.items():
+    # impressão do estado
+    estado_formatado = ", ".join(sorted(estado)) if estado else "-"
+    print(f"Estado AFD: {{{estado_formatado}}}")
+
+    # impressão das transições
+    for simbolo, destinos in transicoes.items():
+        destinos_formatados = ", ".join(sorted(destinos)) if destinos else "-"
+        print(f"  com símbolo '{simbolo}' -> {{{destinos_formatados}}}")
+
+    print("-" * 50)
+
+
