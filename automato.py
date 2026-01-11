@@ -16,7 +16,7 @@ def organizar_entrada(entrada):
         elementos_processados.append(elemento)
     return elementos_processados
 
-alfabeto = input("Insira o alfabeto do seu autômato(separe os simbolos por vírgula): ")
+"""alfabeto = input("Insira o alfabeto do seu autômato(separe os simbolos por vírgula): ")
 lista_simbolos = tuple(organizar_entrada(alfabeto))
 
 print(f"Seu alfabeto é: {lista_simbolos}\n")
@@ -30,16 +30,22 @@ print()
 estados_finais = input("Insira os estados finais do seu autômato(separe os estados por vírgula): ")
 lista_estados_finais = tuple(organizar_entrada(estados_finais))
 
-print(f"Seus estados finais são: {lista_estados_finais}\n")
+print(f"Seus estados finais são: {lista_estados_finais}\n")"""
 
 estado_inicial = 'q0'
 
+#teste com AFND predefinido
 funcao_transicao = {}
+funcao_transicao = {'q0': {'0': ['q1', 'q2', 'q5'], '1': []}, 'q1': {'0': [], '1': ['q3']}, 'q2': {'0': [], '1': ['q4']}, 'q3': {'0': ['q5', 'q6'], '1': []}, 'q4': {'0': ['q5', 'q6'], '1': []}, 'q5': {'0': [], '1': ['q3', 'q4']}, 'q6': {'0': ['q6'], '1': ['q6']}}
+lista_simbolos = ('0', '1')
+lista_estados = ('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6')
+lista_estados_finais = ('q3', 'q4')
+
 #Cria a estrutura inicial da função de transição
-for estado in sorted(lista_estados):
+"""for estado in sorted(lista_estados):
     funcao_transicao[estado] = { #estado como chave principal
         simbolo: list() for simbolo in sorted(lista_simbolos) #simbolos como chaves secundárias : valores vazios (listas)   
-    }
+    }"""
 
 def inserir_transicao(estado_atual):
     #Verifica se o estado atual está na função de transição
@@ -63,8 +69,8 @@ def inserir_transicao(estado_atual):
                     print(f"Aviso: O estado '{destino}' não é válido e será ignorado.")
             funcao_transicao[estado_atual][simbolo] = destinos_processados #Anexa os destinos a chave secundaria
 
-for estado in lista_estados:
-    inserir_transicao(estado)
+""" for estado in lista_estados:
+    inserir_transicao(estado) """
 
 print("Função de transição final do AFND:")
 for estado, simbolo in funcao_transicao.items():
@@ -161,7 +167,7 @@ def criar_funcao_transicao_afd(funcao_afnd, estado_inicial, lista_simbolos):
 
             for estado in estado_atual:
                 if simbolo in funcao_afnd.get(estado, {}): # testa se tem alguma transição pro símbolo
-                    novos_destinos.update(funcao_afnd[estado][simbolo]) #update pra adicionar os estados e não uma lista de estadps
+                    novos_destinos.update(funcao_afnd[estado][simbolo]) #update pra adicionar os estados e não uma lista de estados
 
             novo_estado = frozenset(novos_destinos)
 
@@ -177,7 +183,7 @@ funcao_transicao_afd = criar_funcao_transicao_afd(funcao_transicao, estado_inici
 funcao_transicao_afd = {item_valido: valor for item_valido, valor in funcao_transicao_afd.items() if item_valido}
 
 print("\nFunção de Transição do AFD:\n")
-
+#estado com nomes originais
 for estado, transicoes in funcao_transicao_afd.items():
     # impressão do estado
     estado_formatado = ", ".join(sorted(estado)) if estado else "-"
@@ -190,4 +196,28 @@ for estado, transicoes in funcao_transicao_afd.items():
 
     print("-" * 50)
 
+print("-"*50)
+print(f"AFD ANTES da mofidicação de nomes: {funcao_transicao_afd}\n")
+
+#função afd com nomes modificados 'P0', 'P1', ...
+nova_funcao_transicao_afd = {f"P{i}": valor for i, valor in enumerate(funcao_transicao_afd.values())}
+#valor -> valores nas chaves do afd original
+
+#criação de uma lista de referência entre os estados originais e os novos
+lista_referencia_estados = dict()
+
+for estado_original, estado_novo in zip(funcao_transicao_afd.keys(), nova_funcao_transicao_afd.keys()):
+    lista_referencia_estados[estado_original] = estado_novo
+
+print(lista_referencia_estados)
+
+for estado, transicoes in nova_funcao_transicao_afd.items():
+    for simbolo, destinos in transicoes.items():
+        if destinos in lista_referencia_estados:
+            nova_funcao_transicao_afd[estado][simbolo] = lista_referencia_estados[destinos]
+            #lista_referencia_estados[destinos] -> pega o novo nome do estado de destino
+        
+print("-"*50)
+print(f"AFD APÓS a modificação de nomes: {nova_funcao_transicao_afd}")
+print("-"*50)
 
