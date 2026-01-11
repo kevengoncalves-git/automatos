@@ -173,6 +173,8 @@ def criar_funcao_transicao_afd(funcao_afnd, estado_inicial, lista_simbolos):
     return funcao_afd
 
 funcao_transicao_afd = criar_funcao_transicao_afd(funcao_transicao, estado_inicial, lista_simbolos)
+#remoção dos estados vazios (-) do dicionario
+funcao_transicao_afd = {item_valido: valor for item_valido, valor in funcao_transicao_afd.items() if item_valido}
 
 print("\nFunção de Transição do AFD:\n")
 
