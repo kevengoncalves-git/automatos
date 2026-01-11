@@ -237,3 +237,46 @@ for estado, transicoes in nova_funcao_transicao_afd.items():
     print("-" * 50)
 print("-"*50)
 
+def percorre_afd(estado_atual, palavra, lista_simbolos, lista_estados_finais):
+    caminho = [estado_atual]  # lista para armazenar o caminho percorrido começando pelo P0
+    print(f"Caminho: {estado_atual}")
+    for cabeca_de_leitura in range(len(palavra)):
+        simbolo = palavra[cabeca_de_leitura]
+
+        if simbolo not in lista_simbolos:
+            print("Símbolo da palavra inválido")
+            return False
+
+        estado_atual = nova_funcao_transicao_afd.get(estado_atual, {}).get(simbolo)
+        caminho.append(estado_atual) if estado_atual else caminho.append("X")
+
+        print(f"Caminho: {' -> '.join(map(str, caminho))}")
+
+    # verificação final de aceitação
+    if estado_atual in lista_estados_finais:
+        return True
+    else:
+        return False
+
+
+while True:
+    resposta = input("Deseja verificar uma palavra no AFD? (s/n): ").strip().lower()
+    if resposta == 'n':
+        break
+    if resposta != 's':
+        print("Resposta inválida. Digite 's' ou 'n'.\n")
+        continue
+
+    print("Iniciando verificação da palavra...\n")
+    palavra = input("Insira a palavra a ser verificada pelo AFD: ")
+    print("-"*50)
+    resultado = percorre_afd('P0', palavra, lista_simbolos, estados_finais_novos)
+
+    if resultado:
+        print("-"*50)
+        print(f"A palavra '{palavra}' é aceita pelo AFD (existe pelo menos um caminho válido).\n")
+        print(f"Conjunto de estados finais do AFD: {sorted(estados_finais_novos)}\n")
+    else:
+        print("-"*50)
+        print(f"A palavra '{palavra}' NÃO é aceita pelo AFD.\n")
+        print(f"Conjunto de estados finais do AFD: {sorted(estados_finais_novos)}\n")
