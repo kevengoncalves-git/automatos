@@ -182,22 +182,20 @@ funcao_transicao_afd = criar_funcao_transicao_afd(funcao_transicao, estado_inici
 #remoção dos estados vazios (-) do dicionario
 funcao_transicao_afd = {item_valido: valor for item_valido, valor in funcao_transicao_afd.items() if item_valido}
 
-print("\nFunção de Transição do AFD:\n")
-#estado com nomes originais
-for estado, transicoes in funcao_transicao_afd.items():
-    # impressão do estado
-    estado_formatado = ", ".join(sorted(estado)) if estado else "-"
-    print(f"Estado AFD: {{{estado_formatado}}}")
-
-    # impressão das transições
-    for simbolo, destinos in transicoes.items():
-        destinos_formatados = ", ".join(sorted(destinos)) if destinos else "-"
-        print(f"  com símbolo '{simbolo}' -> {{{destinos_formatados}}}")
-
-    print("-" * 50)
+#função pra poupar meu esforço de organizar o print dos estados
+def imprimir_nomes_estados(funcao_transicao):
+    for estado, transicoes in funcao_transicao.items():
+        estado_formatado = ", ".join(sorted(estado)) if estado else "-"
+        print(f"Estado: {{{estado_formatado}}}")
+        for simbolo, destinos in transicoes.items():
+            destinos_formatados = ", ".join(sorted(destinos)) if destinos else "-"
+            print(f"  com símbolo '{simbolo}' -> {{{destinos_formatados}}}")
+        print("-" * 50)
 
 print("-"*50)
-print(f"AFD ANTES da mofidicação de nomes: {funcao_transicao_afd}\n")
+print("\nFunção de Transição do AFD antes da modificação dos nomes:\n")
+#estado com nomes originais
+imprimir_nomes_estados(funcao_transicao_afd)
 
 #função afd com nomes modificados 'P0', 'P1', ...
 nova_funcao_transicao_afd = {f"P{i}": valor for i, valor in enumerate(funcao_transicao_afd.values())}
@@ -209,7 +207,12 @@ lista_referencia_estados = dict()
 for estado_original, estado_novo in zip(funcao_transicao_afd.keys(), nova_funcao_transicao_afd.keys()):
     lista_referencia_estados[estado_original] = estado_novo
 
-print(lista_referencia_estados)
+print("-"*50)
+print("Lista de referência de estados (original -> novo):")
+for nome_original, novo_nome in lista_referencia_estados.items():
+    print(f"Estado original: {set(nome_original)} -> Novo nome: {novo_nome}")
+print("-"*50)
+
 
 for estado, transicoes in nova_funcao_transicao_afd.items():
     for simbolo, destinos in transicoes.items():
@@ -218,6 +221,11 @@ for estado, transicoes in nova_funcao_transicao_afd.items():
             #lista_referencia_estados[destinos] -> pega o novo nome do estado de destino
         
 print("-"*50)
-print(f"AFD APÓS a modificação de nomes: {nova_funcao_transicao_afd}")
+print(f"AFD APÓS a modificação de nomes:")
+for estado, transicoes in nova_funcao_transicao_afd.items():
+    print(f"Estado: {estado}")
+    for simbolo, destino in transicoes.items():
+        print(f"  com símbolo '{simbolo}' -> {destino}") if destino else print(f"  com símbolo '{simbolo}' -> -")
+    print("-" * 50)
 print("-"*50)
 
