@@ -39,7 +39,7 @@ funcao_transicao = {}
 funcao_transicao = {'q0': {'0': ['q1', 'q2', 'q5'], '1': []}, 'q1': {'0': [], '1': ['q3']}, 'q2': {'0': [], '1': ['q4']}, 'q3': {'0': ['q5', 'q6'], '1': []}, 'q4': {'0': ['q5', 'q6'], '1': []}, 'q5': {'0': [], '1': ['q3', 'q4']}, 'q6': {'0': ['q6'], '1': ['q6']}}
 lista_simbolos = ('0', '1')
 lista_estados = ('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6')
-lista_estados_finais = ('q3', 'q4')
+lista_estados_finais = ('q5', 'q6')
 
 #Cria a estrutura inicial da função de transição
 """for estado in sorted(lista_estados):
@@ -207,6 +207,13 @@ lista_referencia_estados = dict()
 for estado_original, estado_novo in zip(funcao_transicao_afd.keys(), nova_funcao_transicao_afd.keys()):
     lista_referencia_estados[estado_original] = estado_novo
 
+#verificação dos novos estados finais do AFD
+estados_finais_novos = set()
+for referencia in lista_referencia_estados.keys():
+    for estado_final in lista_estados_finais:
+        if estado_final in referencia:
+            estados_finais_novos.add(lista_referencia_estados[referencia])
+
 print("-"*50)
 print("Lista de referência de estados (original -> novo):")
 for nome_original, novo_nome in lista_referencia_estados.items():
@@ -221,6 +228,7 @@ for estado, transicoes in nova_funcao_transicao_afd.items():
             #lista_referencia_estados[destinos] -> pega o novo nome do estado de destino
         
 print("-"*50)
+print(f"Estados finais do AFD : {sorted(estados_finais_novos)}\n")
 print(f"AFD APÓS a modificação de nomes:")
 for estado, transicoes in nova_funcao_transicao_afd.items():
     print(f"Estado: {estado}")
