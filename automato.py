@@ -2,7 +2,7 @@ print("-"*50)
 print("Bem vindo ao conversor e validador de autômatos")
 print("-"*50)
 
-
+#pegar inputs do usuário
 def organizar_entrada(entrada):
     elementos = entrada.split(",") #retira as vírgulas e cria um conjunto com os elementos
     elementos_processados = list() #cria um conjunto vazio para armazenar os elementos
@@ -11,10 +11,12 @@ def organizar_entrada(entrada):
         elementos_processados.append(elemento)
     return elementos_processados
 
+#função para formalizar o auttomato
 def formalizar_automato(alfabeto, estados, tipo, estado_inicial, estados_finais):
     tupla_formalizacao = (alfabeto, estados, tipo, estado_inicial, estados_finais)
     return tupla_formalizacao
 
+#função para printar a formalização do automato de forma mais bonita
 def printar_formalizacao(tupla_formalizacao):
     print("-"*50)
     print("Formalização do autômato:")
@@ -26,6 +28,7 @@ def printar_formalizacao(tupla_formalizacao):
     print(f"F = {tupla_formalizacao[4]}\n")
     print("-"*50)
 
+#função para printar a função de transição do automato
 def printar_funcao_transicao(funcao_transicao):
     for estado, transicoes in funcao_transicao.items():
         print(f"Estado: {estado}")
@@ -34,45 +37,7 @@ def printar_funcao_transicao(funcao_transicao):
         print("-"*30)
     print("-"*50)
 
-"""alfabeto = input("Insira o alfabeto do seu autômato(separe os simbolos por vírgula): ")
-lista_simbolos = tuple(organizar_entrada(alfabeto))
-
-print(f"Seu alfabeto é: {lista_simbolos}\n")
-
-estados = input("Insira os estados do seu autômato(separe os estados por vírgula): ")
-lista_estados = tuple(organizar_entrada(estados))
-
-print(f"Seus estados são: {lista_estados}\n")
-print()
-
-estados_finais = input("Insira os estados finais do seu autômato(separe os estados por vírgula): ")
-lista_estados_finais = tuple(organizar_entrada(estados_finais))
-
-print(f"Seus estados finais são: {lista_estados_finais}\n")"""
-
-estado_inicial = 'q0'
-
-#teste com AFND predefinido
-funcao_transicao = {}
-funcao_transicao = {'q0': {'0': ['q1', 'q2', 'q5'], '1': []}, 'q1': {'0': [], '1': ['q3']}, 'q2': {'0': [], '1': ['q4']}, 'q3': {'0': ['q5', 'q6'], '1': []}, 'q4': {'0': ['q5', 'q6'], '1': []}, 'q5': {'0': [], '1': ['q3', 'q4']}, 'q6': {'0': ['q6'], '1': ['q6']}}
-lista_simbolos = ('0', '1')
-lista_estados = ('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6')
-lista_estados_finais = ('q5', 'q6')
-
-tupla_formalizacao_afnd = (lista_estados, lista_simbolos, funcao_transicao, estado_inicial, lista_estados_finais)
-
-print("-"*50)
-print("Vamos formalizar o seu AFND")
-tupla_formalizacao_afnd = formalizar_automato(lista_simbolos, lista_estados, "AFND", estado_inicial, lista_estados_finais)
-printar_formalizacao(tupla_formalizacao_afnd)
-print("-"*50)
-
-#Cria a estrutura inicial da função de transição
-"""for estado in sorted(lista_estados):
-    funcao_transicao[estado] = { #estado como chave principal
-        simbolo: list() for simbolo in sorted(lista_simbolos) #simbolos como chaves secundárias : valores vazios (listas)   
-    }"""
-
+#função para inserir transições no afnd
 def inserir_transicao(estado_atual):
     #Verifica se o estado atual está na função de transição
     if estado_atual in funcao_transicao:
@@ -95,12 +60,7 @@ def inserir_transicao(estado_atual):
                     print(f"Aviso: O estado '{destino}' não é válido e será ignorado.")
             funcao_transicao[estado_atual][simbolo] = destinos_processados #Anexa os destinos a chave secundaria
 
-""" for estado in lista_estados:
-    inserir_transicao(estado) """
-
-print("Função de transição final do AFND:\n")
-printar_funcao_transicao(funcao_transicao)
-
+#função recursiva para percorrer o AFND e verificar se a palavra é aceita
 def percorre_afnd(estado_atual, palavra, cabeca_de_leitura, caminho):
     if cabeca_de_leitura == len(palavra): #caso onde a cabeça de leitura alcança o final da palavra
         print("Caminho:", " -> ".join(caminho)) #printa o caminho percorrido
@@ -138,29 +98,7 @@ def percorre_afnd(estado_atual, palavra, cabeca_de_leitura, caminho):
 
     return aceita
 
-while True:
-    resposta = input("Deseja verificar uma palavra no AFND? (s/n): ").strip().lower()
-    if resposta == 'n':
-        break
-    if resposta != 's':
-        print("Resposta inválida. Digite 's' ou 'n'.\n")
-        continue
-
-    print("Iniciando verificação da palavra...\n")
-    palavra = input("Insira a palavra a ser verificada pelo AFND: ")
-    print("-"*50)
-    resultado = percorre_afnd(estado_inicial, palavra, 0, [estado_inicial])
-
-    if resultado:
-        print("-"*50)
-        print(f"A palavra '{palavra}' é aceita pelo AFND (existe pelo menos um caminho válido).\n")
-    else:
-        print("-"*50)
-        print(f"A palavra '{palavra}' NÃO é aceita pelo AFND.\n")
-
-
-print("Obrigado por utilizar o conversor e validador de autômatos não determinísticos do Keven")
-
+#tradução do afnd em afd
 def criar_funcao_transicao_afd(funcao_afnd, estado_inicial, lista_simbolos):
 
     funcao_afd = dict()
@@ -200,11 +138,7 @@ def criar_funcao_transicao_afd(funcao_afnd, estado_inicial, lista_simbolos):
 
     return funcao_afd
 
-funcao_transicao_afd = criar_funcao_transicao_afd(funcao_transicao, estado_inicial, lista_simbolos)
-#remoção dos estados vazios (-) do dicionario
-funcao_transicao_afd = {item_valido: valor for item_valido, valor in funcao_transicao_afd.items() if item_valido}
-
-#função pra poupar meu esforço de organizar o print dos estados
+#função pra poupar meu esforço de organizar o print dos estados do afd antigo
 def imprimir_nomes_estados(funcao_transicao):
     for estado, transicoes in funcao_transicao.items():
         estado_formatado = ", ".join(sorted(estado)) if estado else "-"
@@ -213,6 +147,101 @@ def imprimir_nomes_estados(funcao_transicao):
             destinos_formatados = ", ".join(sorted(destinos)) if destinos else "-"
             print(f"  com símbolo '{simbolo}' -> {{{destinos_formatados}}}")
         print("-" * 50)
+
+#função para percorrer o AFD e verificar se a palavra é aceita
+def percorre_afd(estado_atual, palavra, lista_simbolos, lista_estados_finais):
+    caminho = [estado_atual]  # lista para armazenar o caminho percorrido começando pelo P0
+    print(f"Caminho: {estado_atual}")
+    for cabeca_de_leitura in range(len(palavra)):
+        simbolo = palavra[cabeca_de_leitura]
+
+        if simbolo not in lista_simbolos:
+            print("Símbolo da palavra inválido")
+            return False
+
+        estado_atual = nova_funcao_transicao_afd.get(estado_atual, {}).get(simbolo)
+        caminho.append(estado_atual) if estado_atual else caminho.append("X")
+
+        print(f"Caminho: {' -> '.join(map(str, caminho))}")
+
+    # verificação final de aceitação
+    if estado_atual in lista_estados_finais:
+        return True
+    else:
+        return False
+
+#entrada do usuário para criar o AFND manual
+"""alfabeto = input("Insira o alfabeto do seu autômato(separe os simbolos por vírgula): ")
+lista_simbolos = tuple(organizar_entrada(alfabeto))
+
+print(f"Seu alfabeto é: {lista_simbolos}\n")
+
+estados = input("Insira os estados do seu autômato(separe os estados por vírgula): ")
+lista_estados = tuple(organizar_entrada(estados))
+
+print(f"Seus estados são: {lista_estados}\n")
+print()
+
+estados_finais = input("Insira os estados finais do seu autômato(separe os estados por vírgula): ")
+lista_estados_finais = tuple(organizar_entrada(estados_finais))
+
+print(f"Seus estados finais são: {lista_estados_finais}\n")"""
+
+#recolhedor de palavras para teste no afnd e afd
+def recolher_palavra(tipo, estados_finais):
+    while True:
+        resposta = input(f"Deseja verificar uma palavra no {tipo}? (s/n): ").strip().lower()
+        if resposta == 'n':
+            print("Obrigado por utilizar o conversor e validador de palavras do Keven")
+            break
+        if resposta != 's':
+            print("Resposta inválida. Digite 's' ou 'n'.\n")
+            continue
+
+        print("Iniciando verificação da palavra...\n")
+        palavra = input(f"Insira a palavra a ser verificada pelo {tipo}: ")
+        print("-"*50)
+        if tipo == "AFND":
+            resultado = percorre_afnd('q0', palavra, 0, [estado_inicial])
+        else:
+            resultado = percorre_afd('P0', palavra, lista_simbolos, estados_finais)
+        #resultado = percorre_afd('P0', palavra, lista_simbolos, estados_finais_novos)
+
+        if resultado:
+            print("-"*50)
+            print(f"A palavra '{palavra}' é aceita pelo {tipo} (existe pelo menos um caminho válido).\n")
+            print(f"Conjunto de estados finais do {tipo}: {sorted(estados_finais)}\n")
+        else:
+            print("-"*50)
+            print(f"A palavra '{palavra}' NÃO é aceita pelo {tipo}.\n")
+            print(f"Conjunto de estados finais do {tipo}: {sorted(estados_finais)}\n")
+
+#teste com AFND predefinido
+estado_inicial = 'q0'
+funcao_transicao = {}
+funcao_transicao = {'q0': {'0': ['q1', 'q2', 'q5'], '1': []}, 'q1': {'0': [], '1': ['q3']}, 'q2': {'0': [], '1': ['q4']}, 'q3': {'0': ['q5', 'q6'], '1': []}, 'q4': {'0': ['q5', 'q6'], '1': []}, 'q5': {'0': [], '1': ['q3', 'q4']}, 'q6': {'0': ['q6'], '1': ['q6']}}
+lista_simbolos = ('0', '1')
+lista_estados = ('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6')
+lista_estados_finais = ('q5', 'q6')
+
+#formalização do afnd
+print("-"*50)
+print("Vamos formalizar o seu AFND")
+tupla_formalizacao_afnd = formalizar_automato(lista_simbolos, lista_estados, "AFND", estado_inicial, lista_estados_finais)
+printar_formalizacao(tupla_formalizacao_afnd)
+print("-"*50)
+
+#formalização da função de transição do afnd
+print("Função de transição final do AFND:\n")
+printar_funcao_transicao(funcao_transicao)
+
+#teste das palavras no afnd
+recolher_palavra("AFND", lista_estados_finais)
+
+#função transição do afd apartir do afnd
+funcao_transicao_afd = criar_funcao_transicao_afd(funcao_transicao, estado_inicial, lista_simbolos)
+#remoção dos estados vazios (-) do dicionario
+funcao_transicao_afd = {item_valido: valor for item_valido, valor in funcao_transicao_afd.items() if item_valido}
 
 print("-"*50)
 print("\nFunção de Transição do AFD antes da modificação dos nomes:\n")
@@ -242,7 +271,7 @@ for nome_original, novo_nome in lista_referencia_estados.items():
     print(f"Estado original: {set(nome_original)} -> Novo nome: {novo_nome}")
 print("-"*50)
 
-
+#atualização dos nomes dos estados de destino na função de transição do AFD
 for estado, transicoes in nova_funcao_transicao_afd.items():
     for simbolo, destinos in transicoes.items():
         if destinos in lista_referencia_estados:
@@ -256,47 +285,5 @@ tupla_formalizacao_afd = formalizar_automato(lista_simbolos, list(nova_funcao_tr
 printar_formalizacao(tupla_formalizacao_afd)
 printar_funcao_transicao(nova_funcao_transicao_afd)
 
-
-def percorre_afd(estado_atual, palavra, lista_simbolos, lista_estados_finais):
-    caminho = [estado_atual]  # lista para armazenar o caminho percorrido começando pelo P0
-    print(f"Caminho: {estado_atual}")
-    for cabeca_de_leitura in range(len(palavra)):
-        simbolo = palavra[cabeca_de_leitura]
-
-        if simbolo not in lista_simbolos:
-            print("Símbolo da palavra inválido")
-            return False
-
-        estado_atual = nova_funcao_transicao_afd.get(estado_atual, {}).get(simbolo)
-        caminho.append(estado_atual) if estado_atual else caminho.append("X")
-
-        print(f"Caminho: {' -> '.join(map(str, caminho))}")
-
-    # verificação final de aceitação
-    if estado_atual in lista_estados_finais:
-        return True
-    else:
-        return False
-
-
-while True:
-    resposta = input("Deseja verificar uma palavra no AFD? (s/n): ").strip().lower()
-    if resposta == 'n':
-        break
-    if resposta != 's':
-        print("Resposta inválida. Digite 's' ou 'n'.\n")
-        continue
-
-    print("Iniciando verificação da palavra...\n")
-    palavra = input("Insira a palavra a ser verificada pelo AFD: ")
-    print("-"*50)
-    resultado = percorre_afd('P0', palavra, lista_simbolos, estados_finais_novos)
-
-    if resultado:
-        print("-"*50)
-        print(f"A palavra '{palavra}' é aceita pelo AFD (existe pelo menos um caminho válido).\n")
-        print(f"Conjunto de estados finais do AFD: {sorted(estados_finais_novos)}\n")
-    else:
-        print("-"*50)
-        print(f"A palavra '{palavra}' NÃO é aceita pelo AFD.\n")
-        print(f"Conjunto de estados finais do AFD: {sorted(estados_finais_novos)}\n")
+#testar palavras no afd
+recolher_palavra("AFD", estados_finais_novos)
