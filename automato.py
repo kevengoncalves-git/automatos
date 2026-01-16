@@ -2,11 +2,6 @@ print("-"*50)
 print("Bem vindo ao conversor e validador de autômatos")
 print("-"*50)
 
-print()
-
-print("-"*50)
-print("Vamos formalizar o seu AFND")
-print("-"*50)
 
 def organizar_entrada(entrada):
     elementos = entrada.split(",") #retira as vírgulas e cria um conjunto com os elementos
@@ -15,6 +10,29 @@ def organizar_entrada(entrada):
         elemento = elemento.strip()
         elementos_processados.append(elemento)
     return elementos_processados
+
+def formalizar_automato(alfabeto, estados, tipo, estado_inicial, estados_finais):
+    tupla_formalizacao = (alfabeto, estados, tipo, estado_inicial, estados_finais)
+    return tupla_formalizacao
+
+def printar_formalizacao(tupla_formalizacao):
+    print("-"*50)
+    print("Formalização do autômato:")
+    print(f"M = (Q, Σ, δ, q0, F)\n")
+    print(f"Onde:\nQ = {tupla_formalizacao[0]}\n")
+    print(f"Σ = {tupla_formalizacao[1]}\n")
+    print(f"δ = δ_{tupla_formalizacao[2]} \n")
+    print(f"q0 = {tupla_formalizacao[3]}\n")
+    print(f"F = {tupla_formalizacao[4]}\n")
+    print("-"*50)
+
+def printar_funcao_transicao(funcao_transicao):
+    for estado, transicoes in funcao_transicao.items():
+        print(f"Estado: {estado}")
+        for simbolo, destinos in transicoes.items():
+            print(f"  Símbolo: {simbolo} | Destinos: {destinos}") if destinos else print(f"  Símbolo: {simbolo} | Destinos: -")
+        print("-"*30)
+    print("-"*50)
 
 """alfabeto = input("Insira o alfabeto do seu autômato(separe os simbolos por vírgula): ")
 lista_simbolos = tuple(organizar_entrada(alfabeto))
@@ -40,6 +58,14 @@ funcao_transicao = {'q0': {'0': ['q1', 'q2', 'q5'], '1': []}, 'q1': {'0': [], '1
 lista_simbolos = ('0', '1')
 lista_estados = ('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6')
 lista_estados_finais = ('q5', 'q6')
+
+tupla_formalizacao_afnd = (lista_estados, lista_simbolos, funcao_transicao, estado_inicial, lista_estados_finais)
+
+print("-"*50)
+print("Vamos formalizar o seu AFND")
+tupla_formalizacao_afnd = formalizar_automato(lista_simbolos, lista_estados, "AFND", estado_inicial, lista_estados_finais)
+printar_formalizacao(tupla_formalizacao_afnd)
+print("-"*50)
 
 #Cria a estrutura inicial da função de transição
 """for estado in sorted(lista_estados):
@@ -72,12 +98,8 @@ def inserir_transicao(estado_atual):
 """ for estado in lista_estados:
     inserir_transicao(estado) """
 
-print("Função de transição final do AFND:")
-for estado, simbolo in funcao_transicao.items():
-    print(f"Estado: {estado}")
-    for chave, destinos in simbolo.items():
-        print(f"Símbolo: {chave} | Destinos: {destinos}")
-    print("-"*30)
+print("Função de transição final do AFND:\n")
+printar_funcao_transicao(funcao_transicao)
 
 def percorre_afnd(estado_atual, palavra, cabeca_de_leitura, caminho):
     if cabeca_de_leitura == len(palavra): #caso onde a cabeça de leitura alcança o final da palavra
@@ -228,14 +250,12 @@ for estado, transicoes in nova_funcao_transicao_afd.items():
             #lista_referencia_estados[destinos] -> pega o novo nome do estado de destino
         
 print("-"*50)
-print(f"Estados finais do AFD : {sorted(estados_finais_novos)}\n")
+#print(f"Estados finais do AFD : {sorted(estados_finais_novos)}\n")
 print(f"AFD APÓS a modificação de nomes:")
-for estado, transicoes in nova_funcao_transicao_afd.items():
-    print(f"Estado: {estado}")
-    for simbolo, destino in transicoes.items():
-        print(f"  com símbolo '{simbolo}' -> {destino}") if destino else print(f"  com símbolo '{simbolo}' -> -")
-    print("-" * 50)
-print("-"*50)
+tupla_formalizacao_afd = formalizar_automato(lista_simbolos, list(nova_funcao_transicao_afd.keys()), "AFD", "P0", sorted(list(estados_finais_novos)))
+printar_formalizacao(tupla_formalizacao_afd)
+printar_funcao_transicao(nova_funcao_transicao_afd)
+
 
 def percorre_afd(estado_atual, palavra, lista_simbolos, lista_estados_finais):
     caminho = [estado_atual]  # lista para armazenar o caminho percorrido começando pelo P0
