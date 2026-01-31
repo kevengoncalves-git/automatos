@@ -279,7 +279,6 @@ for estado, transicoes in nova_funcao_transicao_afd.items():
             #lista_referencia_estados[destinos] -> pega o novo nome do estado de destino
         
 print("-"*50)
-#print(f"Estados finais do AFD : {sorted(estados_finais_novos)}\n")
 print(f"AFD APÓS a modificação de nomes:")
 tupla_formalizacao_afd = formalizar_automato(lista_simbolos, list(nova_funcao_transicao_afd.keys()), "AFD", "P0", sorted(list(estados_finais_novos)))
 printar_formalizacao(tupla_formalizacao_afd)
