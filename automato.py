@@ -1,3 +1,5 @@
+from tabulate import tabulate
+
 print("-"*50)
 print("Bem vindo ao conversor e validador de autômatos")
 print("-"*50)
@@ -28,14 +30,21 @@ def printar_formalizacao(tupla_formalizacao):
     print(f"F = {tupla_formalizacao[4]}\n")
     print("-"*50)
 
-#função para printar a função de transição do automato
-def printar_funcao_transicao(funcao_transicao):
+#função para printar a função de transição do automato em formato de tabela
+def printar_tabela_funcao_transicao(funcao_transicao, lista_simbolos):
+    tabela = []
     for estado, transicoes in funcao_transicao.items():
-        print(f"Estado: {estado}")
-        for simbolo, destinos in transicoes.items():
-            print(f"  Símbolo: {simbolo} | Destinos: {destinos}") if destinos else print(f"  Símbolo: {simbolo} | Destinos: -")
-        print("-"*30)
-    print("-"*50)
+        linha = [estado]
+        for simbolo in lista_simbolos:
+            destinos = transicoes.get(simbolo, [])
+            if isinstance(destinos, list):
+                destinos = ", ".join(destinos) if destinos else "-"
+            else :
+                destinos = destinos if destinos else "-"
+            linha.append(destinos)
+        tabela.append(linha)
+    headers = ["Estado"] + list(lista_simbolos)
+    print(tabulate(tabela, headers=headers, tablefmt="grid", stralign="center"))
 
 #função para inserir transições no afnd
 def inserir_transicao(estado_atual):
@@ -139,14 +148,18 @@ def criar_funcao_transicao_afd(funcao_afnd, estado_inicial, lista_simbolos):
     return funcao_afd
 
 #função pra poupar meu esforço de organizar o print dos estados do afd antigo
-def imprimir_nomes_estados(funcao_transicao):
+def imprimir_tabela_nomes_estados(funcao_transicao, lista_simbolos):
+    tabela = []
     for estado, transicoes in funcao_transicao.items():
-        estado_formatado = ", ".join(sorted(estado)) if estado else "-"
-        print(f"Estado: {{{estado_formatado}}}")
-        for simbolo, destinos in transicoes.items():
-            destinos_formatados = ", ".join(sorted(destinos)) if destinos else "-"
-            print(f"  com símbolo '{simbolo}' -> {{{destinos_formatados}}}")
-        print("-" * 50)
+        estado_formatado = f"<{''.join(sorted(estado))}>" if estado else '-'
+        linha = [estado_formatado]
+        for simbolo in lista_simbolos:
+            destinos = transicoes.get(simbolo, frozenset())
+            destinos_formatados = f"<{''.join(sorted(destinos))}>" if destinos else '-'
+            linha.append(destinos_formatados)
+        tabela.append(linha)
+    headers = ["Estado"] + list(lista_simbolos)
+    print(tabulate(tabela, headers=headers, tablefmt="grid", stralign="center"))
 
 #função para percorrer o AFD e verificar se a palavra é aceita
 def percorre_afd(estado_atual, palavra, lista_simbolos, lista_estados_finais):
@@ -233,7 +246,7 @@ print("-"*50)
 
 #formalização da função de transição do afnd
 print("Função de transição final do AFND:\n")
-printar_funcao_transicao(funcao_transicao)
+printar_tabela_funcao_transicao(funcao_transicao, lista_simbolos)
 
 #teste das palavras no afnd
 recolher_palavra("AFND", lista_estados_finais)
@@ -246,7 +259,7 @@ funcao_transicao_afd = {item_valido: valor for item_valido, valor in funcao_tran
 print("-"*50)
 print("\nFunção de Transição do AFD antes da modificação dos nomes:\n")
 #estado com nomes originais
-imprimir_nomes_estados(funcao_transicao_afd)
+imprimir_tabela_nomes_estados(funcao_transicao_afd, lista_simbolos)
 
 #função afd com nomes modificados 'P0', 'P1', ...
 nova_funcao_transicao_afd = {f"P{i}": valor for i, valor in enumerate(funcao_transicao_afd.values())}
@@ -282,7 +295,9 @@ print("-"*50)
 print(f"AFD APÓS a modificação de nomes:")
 tupla_formalizacao_afd = formalizar_automato(lista_simbolos, list(nova_funcao_transicao_afd.keys()), "AFD", "P0", sorted(list(estados_finais_novos)))
 printar_formalizacao(tupla_formalizacao_afd)
-printar_funcao_transicao(nova_funcao_transicao_afd)
+printar_tabela_funcao_transicao(nova_funcao_transicao_afd, lista_simbolos)
 
 #testar palavras no afd
 recolher_palavra("AFD", estados_finais_novos)
+
+print(nova_funcao_transicao_afd)
