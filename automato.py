@@ -241,6 +241,30 @@ def preencher_transicoes_vazias_afd(funcao_transicao_afd):
         funcao_transicao_afd["A"] = {simbolo: "A" for simbolo in lista_simbolos}
 
     return funcao_transicao_afd      
+
+#Tabela de pares para minimização
+def imprimir_tabela_de_pares(funcao_transicao_afd):
+    estados = [estado for estado in funcao_transicao_afd.keys()]
+
+    #Colunas: primeiro ao penúltimo
+    colunas = estados[:-1]
+
+    tabela = []
+
+    #Linhas: segundo ao último
+    for i in range(1, len(estados)):
+        linha = [estados[i]]
+        for j in range(len(estados) - 1):
+            if j >= i:
+                linha.append("-")
+            else:
+                linha.append("")
+        tabela.append(linha)
+
+    cabecalho = [""] + colunas
+
+    print(tabulate(tabela, headers=cabecalho, tablefmt="grid"))
+
 #teste com AFND predefinido
 estado_inicial = 'q0'
 funcao_transicao = {}
@@ -317,3 +341,6 @@ nova_funcao_transicao_afd = preencher_transicoes_vazias_afd(nova_funcao_transica
 
 #Print do preenchimento com estados vazios
 printar_tabela_funcao_transicao(nova_funcao_transicao_afd, lista_simbolos)
+
+#Print da tabela de pares
+imprimir_tabela_de_pares(nova_funcao_transicao_afd)
