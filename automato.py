@@ -229,6 +229,18 @@ def recolher_palavra(tipo, estados_finais):
             print(f"A palavra '{palavra}' NÃO é aceita pelo {tipo}.\n")
             print(f"Conjunto de estados finais do {tipo}: {sorted(estados_finais)}\n")
 
+#Preenche quando possível transições vazias do afd
+def preencher_transicoes_vazias_afd(funcao_transicao_afd):
+    tem_transicoes_vazias = False
+    for estado, transicoes in funcao_transicao_afd.items():
+        for simbolo, destino in transicoes.items():
+            if isinstance(destino, frozenset): #Se destino for um frozenset significa que está vazio
+                funcao_transicao_afd[estado][simbolo] = "A"
+                tem_transicoes_vazias = True
+    if tem_transicoes_vazias: #Inserção do estado artificial
+        funcao_transicao_afd["A"] = {simbolo: "A" for simbolo in lista_simbolos}
+
+    return funcao_transicao_afd      
 #teste com AFND predefinido
 estado_inicial = 'q0'
 funcao_transicao = {}
@@ -281,7 +293,8 @@ for referencia in lista_referencia_estados.keys():
 print("-"*50)
 print("Lista de referência de estados (original -> novo):")
 for nome_original, novo_nome in lista_referencia_estados.items():
-    print(f"Estado original: {set(nome_original)} -> Novo nome: {novo_nome}")
+    nome_original_unido = f"<{''.join(sorted(set(nome_original)))}>"
+    print(f"Estado original: {nome_original_unido} -> Novo nome: {novo_nome}")
 print("-"*50)
 
 #atualização dos nomes dos estados de destino na função de transição do AFD
@@ -289,7 +302,6 @@ for estado, transicoes in nova_funcao_transicao_afd.items():
     for simbolo, destinos in transicoes.items():
         if destinos in lista_referencia_estados:
             nova_funcao_transicao_afd[estado][simbolo] = lista_referencia_estados[destinos]
-            #lista_referencia_estados[destinos] -> pega o novo nome do estado de destino
         
 print("-"*50)
 print(f"AFD APÓS a modificação de nomes:")
@@ -298,6 +310,10 @@ printar_formalizacao(tupla_formalizacao_afd)
 printar_tabela_funcao_transicao(nova_funcao_transicao_afd, lista_simbolos)
 
 #testar palavras no afd
-recolher_palavra("AFD", estados_finais_novos)
+recolher_palavra("AFD", estados_finais_novos) 
 
-print(nova_funcao_transicao_afd)
+#Preenchimento da nova_função do afd com transições artificiais (quando possível) 
+nova_funcao_transicao_afd = preencher_transicoes_vazias_afd(nova_funcao_transicao_afd)
+
+#Print do preenchimento com estados vazios
+printar_tabela_funcao_transicao(nova_funcao_transicao_afd, lista_simbolos)
