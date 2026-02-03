@@ -1,4 +1,5 @@
 from tabulate import tabulate
+import pandas as pd
 
 print("-"*50)
 print("Bem vindo ao conversor e validador de autômatos")
@@ -265,6 +266,25 @@ def imprimir_tabela_de_pares(funcao_transicao_afd):
 
     print(tabulate(tabela, headers=cabecalho, tablefmt="grid"))
 
+#Marcação dos estados trivialmente equivalentes com o 'x'
+def marcar_pares_trivialmente_equivalentes(funcao_transicao_afd, estados_finais):
+    estados = [estado for estado in funcao_transicao_afd.keys()]
+    print(f"Estados finais: {sorted(estados_finais)} | Estados: {estados}")
+    dataframe_pares = pd.DataFrame(index=estados[1:], columns=estados[:-1])
+    for i in range(1, len(estados)):
+        for j in range(len(estados) - 1):
+            if j >= i:
+                dataframe_pares.iat[i-1, j] = "-" #i-1 pq o index começa em 0, mas já que é pego a partir da posição 1
+                                                  #é necessário subtrair 1 pra alinhar
+            else:
+                estado1 = estados[i] #estado da linha
+                estado2 = estados[j] #estado da coluna
+                if (estado1 in estados_finais) != (estado2 in estados_finais): #se um é final e o outro não retorna True
+                    dataframe_pares.iat[i-1, j] = "x" #.iat pra acessar a posição df
+                else:
+                    dataframe_pares.iat[i-1, j] = ""
+    print(dataframe_pares)
+
 #teste com AFND predefinido
 estado_inicial = 'q0'
 funcao_transicao = {}
@@ -344,3 +364,6 @@ printar_tabela_funcao_transicao(nova_funcao_transicao_afd, lista_simbolos)
 
 #Print da tabela de pares
 imprimir_tabela_de_pares(nova_funcao_transicao_afd)
+
+#Marcando com x os pares trivialmente equivalentes(finais e não finais)
+marcar_pares_trivialmente_equivalentes(nova_funcao_transicao_afd, estados_finais_novos)
