@@ -232,6 +232,8 @@ def recolher_palavra(tipo, estados_finais):
 
 #Preenche quando possível transições vazias do afd
 def preencher_transicoes_vazias_afd(funcao_transicao_afd):
+    print("-"*50)
+    print("Verificando se há transições vazias\n")
     tem_transicoes_vazias = False
     for estado, transicoes in funcao_transicao_afd.items():
         for simbolo, destino in transicoes.items():
@@ -239,6 +241,7 @@ def preencher_transicoes_vazias_afd(funcao_transicao_afd):
                 funcao_transicao_afd[estado][simbolo] = "A"
                 tem_transicoes_vazias = True
     if tem_transicoes_vazias: #Inserção do estado artificial
+        print("Há transições vazias")
         funcao_transicao_afd["A"] = {simbolo: "A" for simbolo in lista_simbolos}
 
     return funcao_transicao_afd      
@@ -265,6 +268,7 @@ def imprimir_tabela_de_pares(funcao_transicao_afd):
     cabecalho = [""] + colunas
 
     print(tabulate(tabela, headers=cabecalho, tablefmt="grid"))
+    print("-"*50)
 
 def marcar_pares_trivialmente_equivalentes(funcao_transicao_afd, estados_finais):
     estados = list(funcao_transicao_afd.keys())
@@ -297,6 +301,8 @@ def marcar_pares_trivialmente_equivalentes(funcao_transicao_afd, estados_finais)
             tablefmt="grid"
         )
     )
+
+    return dataframe_pares
 
 
 #teste com AFND predefinido
@@ -371,6 +377,8 @@ printar_tabela_funcao_transicao(nova_funcao_transicao_afd, lista_simbolos)
 recolher_palavra("AFD", estados_finais_novos) 
 
 #Preenchimento da nova_função do afd com transições artificiais (quando possível) 
+print("-"*50)
+print("Preparação para a minimização do afd")
 nova_funcao_transicao_afd = preencher_transicoes_vazias_afd(nova_funcao_transicao_afd)
 
 #Print do preenchimento com estados vazios
@@ -380,4 +388,59 @@ printar_tabela_funcao_transicao(nova_funcao_transicao_afd, lista_simbolos)
 imprimir_tabela_de_pares(nova_funcao_transicao_afd)
 
 #Marcando com x os pares trivialmente equivalentes(finais e não finais)
-marcar_pares_trivialmente_equivalentes(nova_funcao_transicao_afd, estados_finais_novos)
+tabela_minimizacao = marcar_pares_trivialmente_equivalentes(nova_funcao_transicao_afd, estados_finais_novos)
+
+#Marcar pares trivialmente não equivalentes com ⦻
+print("-"*50)
+#percorrer meu df a procura de células vazias
+estados = list(nova_funcao_transicao_afd.keys())
+#P0 P1 P2 P3 A
+# 0  1  2  3 4
+print("Pares vazios(linha|coluna):")
+linhas = estados[1:]
+colunas = estados[:-1]
+for coluna in tabela_minimizacao.columns:
+    for linha in linhas:
+        if tabela_minimizacao.at[linha, coluna] == "":
+            #printa o estado vazio
+            print(f"{linha}{coluna}")
+            for simbolo in lista_simbolos:
+                transicoes = []
+                transicao_linha = nova_funcao_transicao_afd[linha][simbolo]
+                transicao_coluna = nova_funcao_transicao_afd[coluna][simbolo]
+                transicoes.append(f"{transicao_linha}{transicao_coluna}") 
+                print(f"Transição do par ao ler o símbolo {simbolo}: {transicoes}")
+                
+                # ignora AA
+                if transicao_linha == transicao_coluna:
+                    continue
+                
+                # ignora estado morto ou fora da tabela
+                if transicao_linha not in tabela_minimizacao.index:
+                    continue
+                if transicao_coluna not in tabela_minimizacao.columns:
+                    continue
+                
+                # se o par de destino já foi marcado, marca o atual
+                if tabela_minimizacao.at[transicao_linha, transicao_coluna] == 'x':
+                    print(f"transicao_linha: {transicao_linha} | transicao_coluna: { transicao_coluna}")
+                    tabela_minimizacao.at[linha, coluna] = '⦻'
+                    print(f"Par {transicao_linha}{transicao_coluna} --> não equivalente --> marcando o par {linha}{coluna} como não equivalente")
+                    break
+            print("\n")
+            print("-"*50)
+            print("Atualização da tabela de minimização:")
+            print(
+                tabulate(
+                    tabela_minimizacao.values,
+                    headers=tabela_minimizacao.columns,
+                    showindex=list(tabela_minimizacao.index),
+                    tablefmt="grid"
+                )
+            )
+            print("\n")
+
+                
+
+
+
