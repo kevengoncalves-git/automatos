@@ -266,24 +266,38 @@ def imprimir_tabela_de_pares(funcao_transicao_afd):
 
     print(tabulate(tabela, headers=cabecalho, tablefmt="grid"))
 
-#Marcação dos estados trivialmente equivalentes com o 'x'
 def marcar_pares_trivialmente_equivalentes(funcao_transicao_afd, estados_finais):
-    estados = [estado for estado in funcao_transicao_afd.keys()]
-    print(f"Estados finais: {sorted(estados_finais)} | Estados: {estados}")
-    dataframe_pares = pd.DataFrame(index=estados[1:], columns=estados[:-1])
+    estados = list(funcao_transicao_afd.keys())
+    print(f"Estados finais: {sorted(estados_finais)} | Estados: {estados}\n")
+
+    dataframe_pares = pd.DataFrame(
+        index=estados[1:],     # linhas: do segundo ao último
+        columns=estados[:-1]   # colunas: do primeiro ao penúltimo
+    )
+
     for i in range(1, len(estados)):
         for j in range(len(estados) - 1):
             if j >= i:
-                dataframe_pares.iat[i-1, j] = "-" #i-1 pq o index começa em 0, mas já que é pego a partir da posição 1
-                                                  #é necessário subtrair 1 pra alinhar
+                dataframe_pares.iat[i-1, j] = "-"
             else:
-                estado1 = estados[i] #estado da linha
-                estado2 = estados[j] #estado da coluna
-                if (estado1 in estados_finais) != (estado2 in estados_finais): #se um é final e o outro não retorna True
-                    dataframe_pares.iat[i-1, j] = "x" #.iat pra acessar a posição df
+                estado1 = estados[i]  # linha
+                estado2 = estados[j]  # coluna
+
+                if (estado1 in estados_finais) != (estado2 in estados_finais):
+                    dataframe_pares.iat[i-1, j] = "x"
                 else:
                     dataframe_pares.iat[i-1, j] = ""
-    print(dataframe_pares)
+
+    # Impressão com tabulate
+    print(
+        tabulate(
+            dataframe_pares.values,
+            headers=dataframe_pares.columns,
+            showindex=list(dataframe_pares.index),
+            tablefmt="grid"
+        )
+    )
+
 
 #teste com AFND predefinido
 estado_inicial = 'q0'
