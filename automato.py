@@ -304,14 +304,59 @@ def marcar_pares_trivialmente_equivalentes(funcao_transicao_afd, estados_finais)
 
     return dataframe_pares
 
+#Printa todas as regras gramaticais dos estados nao terminais
+def printar_regras_gramaticais(regras_gramaticais_P):
+    for estado_nao_terminal, regras in regras_gramaticais_P.items():
+        print(f"Estado não Terminal: {estado_nao_terminal}")
+        for regra in regras:
+            if regra == '-':
+                print(f"Regra: {estado_nao_terminal} -> ε (transição vazia)")
+            else:
+                print(f"Regra: {estado_nao_terminal} -> {regra}")
 
-#teste com AFND predefinido
+#Verifica se a gramática é linear ou não
+def verificar_tipo_gramatica(regras_gramaticais_P):
+    print("-"*50)
+    print("Verificação se a gramática é GL ou GLC:")
+    for regras in regras_gramaticais_P.values():
+        e_gramatica_linear = False
+        for regra in regras:
+            if regra == '-':
+                continue
+            else:
+                regra_str = str(regra)
+                cont = 0
+                for char in regra_str:
+                    if char.isupper():
+                        cont += 1
+                if cont > 1:
+                   print(f"Regra: {regra_str} prova que é uma GLC")
+                   break
+                else: 
+                    e_gramatica_linear = True
+                cont = 0
+    if e_gramatica_linear:
+        print("\n Resultado: Gramática Linear)")
+    else:
+        print("\nResultado: Gramática Não Linear (GLC)")
+    print("-"*50)
+
+#teste com AFND pré-definido
 estado_inicial = 'q0'
 funcao_transicao = {}
 funcao_transicao = {'q0': {'0': ['q1', 'q2', 'q5'], '1': []}, 'q1': {'0': [], '1': ['q3']}, 'q2': {'0': [], '1': ['q4']}, 'q3': {'0': ['q5', 'q6'], '1': []}, 'q4': {'0': ['q5', 'q6'], '1': []}, 'q5': {'0': [], '1': ['q3', 'q4']}, 'q6': {'0': ['q6'], '1': ['q6']}}
 lista_simbolos = ('0', '1')
 lista_estados = ('q0', 'q1', 'q2', 'q3', 'q4', 'q5', 'q6')
 lista_estados_finais = ('q5', 'q6')
+
+#teste com gramática pré-definida
+estados_nao_terminais = ('S', 'A', 'B', 'C')
+estados_terminais = ('a', 'b')
+regras_gramaticais_P = {'S': ["aA", "bS"], 'A': ["aB", "bS"], 'B': ["aC", "bS"], 'C': ["AaC", "bC", '-']} #'-' transição vazia
+simbolo_inicial = 'S'
+
+printar_regras_gramaticais(regras_gramaticais_P)
+verificar_tipo_gramatica(regras_gramaticais_P)
 
 #formalização do afnd
 print("-"*50)
