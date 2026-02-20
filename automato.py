@@ -270,6 +270,7 @@ def imprimir_tabela_de_pares(funcao_transicao_afd):
     print(tabulate(tabela, headers=cabecalho, tablefmt="grid"))
     print("-"*50)
 
+#Marca os pares trivialmente equivalentes (finais e não finais)
 def marcar_pares_trivialmente_equivalentes(funcao_transicao_afd, estados_finais):
     estados = list(funcao_transicao_afd.keys())
     print(f"Estados finais: {sorted(estados_finais)} | Estados: {estados}\n")
@@ -340,6 +341,98 @@ def verificar_tipo_gramatica(regras_gramaticais_P):
     else:
         print("\nResultado: Gramática Não Linear (GLC)")
     print("-"*50)
+
+#Marca os pares não equivalentes
+def marcar_pares_nao_equivalentes(tabela_minimizacao, nova_funcao_transicao_afd, lista_simbolos):
+    print("-"*50)
+    print("Marcando pares não equivalentes com ⦻")
+
+    estados = list(nova_funcao_transicao_afd.keys())
+    linhas = estados[1:]
+    #colunas = estados[:-1]
+
+    print("Pares vazios (linha|coluna):")
+
+    houve_mudancas = True #verifica se algum par foi marcado durante a iteração
+
+    while houve_mudancas:
+        houve_mudancas = False #por enquanto sem mudanças
+
+        for coluna in tabela_minimizacao.columns:
+            for linha in linhas:
+                if tabela_minimizacao.at[linha, coluna] == "":
+
+                    print(f"Verificando célula: {linha}{coluna}")
+
+                    for simbolo in lista_simbolos:
+
+                        transicao_linha = nova_funcao_transicao_afd[linha][simbolo]
+                        transicao_coluna = nova_funcao_transicao_afd[coluna][simbolo]
+
+                        print(f"Transição ao ler '{simbolo}': {transicao_linha}{transicao_coluna}")
+
+                        # ---------------------------------------------
+                        # 🔥 MODIFICAÇÃO 1: Ignorar apenas AA
+                        # ---------------------------------------------
+                        if transicao_linha == transicao_coluna:
+                            continue
+
+                        # ---------------------------------------------
+                        # 🔥 MODIFICAÇÃO 2: Verificar se ambos existem
+                        # na lista de estados antes de continuar
+                        # ---------------------------------------------
+                        if transicao_linha not in estados or transicao_coluna not in estados:
+                            continue
+
+                        # ---------------------------------------------
+                        # 🔥 MODIFICAÇÃO 3 (PRINCIPAL):
+                        # NORMALIZAÇÃO DO PAR
+                        # Garante que P4A = AP4
+                        # Sempre coloca o maior índice como linha
+                        # e o menor como coluna
+                        # ---------------------------------------------
+                        idx1 = estados.index(transicao_linha)
+                        idx2 = estados.index(transicao_coluna)
+
+                        if idx1 > idx2:
+                            linha_norm = transicao_linha
+                            coluna_norm = transicao_coluna
+                        else:
+                            linha_norm = transicao_coluna
+                            coluna_norm = transicao_linha
+
+                        print(f"Par normalizado: {linha_norm}{coluna_norm}")
+
+                        # ---------------------------------------------
+                        # 🔥 MODIFICAÇÃO 4:
+                        # Só consulta a tabela DEPOIS da normalização
+                        # ---------------------------------------------
+                        if (
+                            linha_norm in tabela_minimizacao.index and
+                            coluna_norm in tabela_minimizacao.columns
+                        ):
+                            if tabela_minimizacao.at[linha_norm, coluna_norm] == 'x' or tabela_minimizacao.at[linha_norm, coluna_norm] == '⦻':
+                                tabela_minimizacao.at[linha, coluna] = '⦻'
+                                houve_mudancas = True #se marcou é pq teve mudança
+                                print(f"Par {linha_norm}{coluna_norm} já marcado.")
+                                print(f"Marcando {linha}{coluna} como não equivalente.\n")
+                                break
+
+                    print("\n" + "-"*50)
+                    print("Atualização da tabela de minimização:")
+                    print(
+                        tabulate(
+                            tabela_minimizacao.values,
+                            headers=tabela_minimizacao.columns,
+                            showindex=list(tabela_minimizacao.index),
+                            tablefmt="grid"
+                        )
+                    )
+                    print("\n")
+
+
+    print(tabela_minimizacao)
+    return tabela_minimizacao
 
 #teste com AFND pré-definido
 estado_inicial = 'q0'
@@ -435,57 +528,6 @@ imprimir_tabela_de_pares(nova_funcao_transicao_afd)
 #Marcando com x os pares trivialmente equivalentes(finais e não finais)
 tabela_minimizacao = marcar_pares_trivialmente_equivalentes(nova_funcao_transicao_afd, estados_finais_novos)
 
-#Marcar pares trivialmente não equivalentes com ⦻
-print("-"*50)
-#percorrer meu df a procura de células vazias
-estados = list(nova_funcao_transicao_afd.keys())
-#P0 P1 P2 P3 A
-# 0  1  2  3 4
-print("Pares vazios(linha|coluna):")
-linhas = estados[1:]
-colunas = estados[:-1]
-for coluna in tabela_minimizacao.columns:
-    for linha in linhas:
-        if tabela_minimizacao.at[linha, coluna] == "":
-            #printa o estado vazio
-            print(f"{linha}{coluna}")
-            for simbolo in lista_simbolos:
-                transicoes = []
-                transicao_linha = nova_funcao_transicao_afd[linha][simbolo]
-                transicao_coluna = nova_funcao_transicao_afd[coluna][simbolo]
-                transicoes.append(f"{transicao_linha}{transicao_coluna}") 
-                print(f"Transição do par ao ler o símbolo {simbolo}: {transicoes}")
-                
-                # ignora AA
-                if transicao_linha == transicao_coluna:
-                    continue
-                
-                # ignora estado morto ou fora da tabela
-                if transicao_linha not in tabela_minimizacao.index:
-                    continue
-                if transicao_coluna not in tabela_minimizacao.columns:
-                    continue
-                
-                # se o par de destino já foi marcado, marca o atual
-                if tabela_minimizacao.at[transicao_linha, transicao_coluna] == 'x':
-                    print(f"transicao_linha: {transicao_linha} | transicao_coluna: { transicao_coluna}")
-                    tabela_minimizacao.at[linha, coluna] = '⦻'
-                    print(f"Par {transicao_linha}{transicao_coluna} --> não equivalente --> marcando o par {linha}{coluna} como não equivalente")
-                    break
-            print("\n")
-            print("-"*50)
-            print("Atualização da tabela de minimização:")
-            print(
-                tabulate(
-                    tabela_minimizacao.values,
-                    headers=tabela_minimizacao.columns,
-                    showindex=list(tabela_minimizacao.index),
-                    tablefmt="grid"
-                )
-            )
-            print("\n")
-
-                
-
-
+#Tabela de pares atualizada após marcar os pares trivialmente equivalentes            
+tabela_minimizacao_atualizada = marcar_pares_nao_equivalentes(tabela_minimizacao, nova_funcao_transicao_afd, lista_simbolos)
 
