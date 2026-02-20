@@ -343,11 +343,11 @@ def verificar_tipo_gramatica(regras_gramaticais_P):
     print("-"*50)
 
 #Marca os pares não equivalentes
-def marcar_pares_nao_equivalentes(tabela_minimizacao, nova_funcao_transicao_afd, lista_simbolos):
+def marcar_pares_nao_equivalentes(tabela_minimizacao, funcao_transicao_afd_espacos_vazios, lista_simbolos):
     print("-"*50)
     print("Marcando pares não equivalentes com ⦻")
 
-    estados = list(nova_funcao_transicao_afd.keys())
+    estados = list(funcao_transicao_afd_espacos_vazios.keys())
     linhas = estados[1:]
     #colunas = estados[:-1]
 
@@ -366,8 +366,8 @@ def marcar_pares_nao_equivalentes(tabela_minimizacao, nova_funcao_transicao_afd,
 
                     for simbolo in lista_simbolos:
 
-                        transicao_linha = nova_funcao_transicao_afd[linha][simbolo]
-                        transicao_coluna = nova_funcao_transicao_afd[coluna][simbolo]
+                        transicao_linha = funcao_transicao_afd_espacos_vazios[linha][simbolo]
+                        transicao_coluna = funcao_transicao_afd_espacos_vazios[coluna][simbolo]
 
                         print(f"Transição ao ler '{simbolo}': {transicao_linha}{transicao_coluna}")
 
@@ -433,6 +433,40 @@ def marcar_pares_nao_equivalentes(tabela_minimizacao, nova_funcao_transicao_afd,
 
     print(tabela_minimizacao)
     return tabela_minimizacao
+
+#Juntar pares equivalentes
+def juntar_pares_equivalentes(tabela_minimizacao_atualizada, funcao_transicao_afd):
+    print("-"*50)
+    estados_equivalentes = set()
+    for coluna in tabela_minimizacao_atualizada.columns:
+        for linha in tabela_minimizacao_atualizada.index:
+            if tabela_minimizacao_atualizada.at[linha, coluna] == "":
+                print(f"Par equivalente encontrado: {linha} | {coluna}")
+                estados_equivalentes.add(linha)
+                estados_equivalentes.add(coluna)
+
+    print("\nEstados equivalentes: ", sorted(estados_equivalentes))
+
+    #junção dos estados em um só
+    novo_estado = str()
+    for estado in sorted(estados_equivalentes):
+        novo_estado += estado
+
+    print("Novo estado após junção dos equivalentes: ", novo_estado)
+
+    #Atualização da função transicao
+    for estado, transicoes in funcao_transicao_afd.items():
+        for simbolo, destino in transicoes.items():
+            if destino in estados_equivalentes:
+                funcao_transicao_afd[estado][simbolo] = novo_estado
+
+    afd_minimizado = dict()
+    for estado, transicoes in funcao_transicao_afd.items():
+        if estado not in estados_equivalentes:
+            afd_minimizado[estado] = transicoes
+    #next e iter pra pegar a próxima chave do dicionário
+    afd_minimizado[novo_estado] = funcao_transicao_afd[next(iter(estados_equivalentes))]
+    return afd_minimizado
 
 #teste com AFND pré-definido
 estado_inicial = 'q0'
@@ -511,23 +545,41 @@ tupla_formalizacao_afd = formalizar_automato(lista_simbolos, list(nova_funcao_tr
 printar_formalizacao(tupla_formalizacao_afd)
 printar_tabela_funcao_transicao(nova_funcao_transicao_afd, lista_simbolos)
 
+#pegando afd antes da adição das transições artificiais
+funcao_transicao_afd = nova_funcao_transicao_afd.copy()
+
 #testar palavras no afd
 recolher_palavra("AFD", estados_finais_novos) 
 
 #Preenchimento da nova_função do afd com transições artificiais (quando possível) 
 print("-"*50)
 print("Preparação para a minimização do afd")
-nova_funcao_transicao_afd = preencher_transicoes_vazias_afd(nova_funcao_transicao_afd)
+funcao_transicao_afd_espacos_vazios = preencher_transicoes_vazias_afd(nova_funcao_transicao_afd)
 
 #Print do preenchimento com estados vazios
-printar_tabela_funcao_transicao(nova_funcao_transicao_afd, lista_simbolos)
+printar_tabela_funcao_transicao(funcao_transicao_afd_espacos_vazios, lista_simbolos)
 
 #Print da tabela de pares
-imprimir_tabela_de_pares(nova_funcao_transicao_afd)
+imprimir_tabela_de_pares(funcao_transicao_afd_espacos_vazios)
 
-#Marcando com x os pares trivialmente equivalentes(finais e não finais)
-tabela_minimizacao = marcar_pares_trivialmente_equivalentes(nova_funcao_transicao_afd, estados_finais_novos)
+#Marcando com x os pares trivialmente não equivalentes(finais e não finais)
+tabela_minimizacao = marcar_pares_trivialmente_equivalentes(funcao_transicao_afd_espacos_vazios, estados_finais_novos)
 
-#Tabela de pares atualizada após marcar os pares trivialmente equivalentes            
-tabela_minimizacao_atualizada = marcar_pares_nao_equivalentes(tabela_minimizacao, nova_funcao_transicao_afd, lista_simbolos)
+#Tabela de pares atualizada após marcar os pares não equivalentes            
+tabela_minimizacao_atualizada = marcar_pares_nao_equivalentes(tabela_minimizacao, funcao_transicao_afd_espacos_vazios, lista_simbolos)
+
+#Junção dos pares equivalente
+afd_minimizado = juntar_pares_equivalentes(tabela_minimizacao_atualizada, funcao_transicao_afd)
+estados_finais = set()
+for estado in afd_minimizado.keys():
+    for estado_final in estados_finais_novos:
+        if estado_final in estado:
+            estados_finais.add(estado)
+
+print("-"*50)
+print("AFD Minimizado:")
+printar_tabela_funcao_transicao(afd_minimizado, lista_simbolos)
+
+#Testar palavras no AFD minimizado
+recolher_palavra("AFD Minimizado", estados_finais)
 
