@@ -53,9 +53,9 @@ def gerar_arvore_derivacao(gramatica, palavvra_alvo):
         print("Palavra gerado com sucesso. gerando passo a passo: \n")
         for passo in caminho_sucesso:
             print(passo)
-        else:
-            print(f"A palavra '{palavvra_alvo}' nao pode ser gerada por esta gramatica")
-        print("-"*40)
+    else:
+        print(f"A palavra '{palavvra_alvo}' nao pode ser gerada por esta gramatica")
+    print("-"*40)
 
 # teste
 gramatica_teste = {
