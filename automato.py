@@ -270,7 +270,7 @@ def preencher_transicoes_vazias_afd(funcao_transicao_afd):
     tem_transicoes_vazias = False
     for estado, transicoes in funcao_transicao_afd.items():
         for simbolo, destino in transicoes.items():
-            if isinstance(destino, frozenset): #Se destino for um frozenset significa que está vazio
+            if destino is None: #Se destino for None significa que está vazio
                 funcao_transicao_afd[estado][simbolo] = "A"
                 tem_transicoes_vazias = True
     if tem_transicoes_vazias: #Inserção do estado artificial
@@ -521,6 +521,19 @@ while True:
         printar_formalizacao(formalizacao)
         print(f"Função de transição do {tipo_automato}:")
         printar_tabela_funcao_transicao(funcao_transicao, lista_simbolos)
+
+        while True:
+            opcao_secundaria = menu_secundario()
+
+            if opcao_secundaria == 1 and tipo_automato == "AFND":
+                recolher_palavra("AFND", estados_finais)
+            elif opcao_secundaria == 1 and tipo_automato == "AFD":
+                recolher_palavra("AFD", estados_finais)
+            elif opcao_secundaria == 2:
+                break
+            else:
+                exit()
+
 
 
     #===================AFND PRÉ-DEFINIDO PRA TESTE DO USUARIO===================
