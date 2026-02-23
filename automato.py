@@ -141,39 +141,40 @@ def percorre_afnd(estado_atual, palavra, cabeca_de_leitura, caminho):
 def criar_funcao_transicao_afd(funcao_afnd, estado_inicial, lista_simbolos):
 
     funcao_afd = dict()
-
-    # estado inicial do AFD é um conjunto
     estado_inicial_afd = frozenset({estado_inicial})
 
     estados_em_processamento = [estado_inicial_afd]
     estados_processados = set()
 
-    funcao_afd[estado_inicial_afd] = dict()
-
     while estados_em_processamento:
-        estado_atual = estados_em_processamento.pop(0) #estado_atual -> conjunto de estados
+        estado_atual = estados_em_processamento.pop(0)
 
-        if estado_atual in estados_processados: #se o estado já foi processado -> passa pro próximo
+        if estado_atual in estados_processados:
             continue
 
-        estados_processados.add(estado_atual) #adiciona o estado atual aos processados
-        funcao_afd.setdefault(estado_atual, dict()) #estado atual como chave de um dicionario 
-        #'setdefault' cria a chave se não existir
+        estados_processados.add(estado_atual)
+        funcao_afd.setdefault(estado_atual, dict())
 
-        for simbolo in lista_simbolos: #pega os símbolos do AFND
+        for simbolo in lista_simbolos:
 
             novos_destinos = set()
 
             for estado in estado_atual:
-                if simbolo in funcao_afnd.get(estado, {}): # testa se tem alguma transição pro símbolo
-                    novos_destinos.update(funcao_afnd[estado][simbolo]) #update pra adicionar os estados e não uma lista de estados
+                transicoes = funcao_afnd.get(estado, {}).get(simbolo, [])
+                
+                #verifica se o destino não é vazio ou um estado inválido
+                for destino in transicoes:
+                    if destino and destino != "-":
+                        novos_destinos.add(destino)
 
-            novo_estado = frozenset(novos_destinos)
+            if novos_destinos:
+                novo_estado = frozenset(novos_destinos)
+                funcao_afd[estado_atual][simbolo] = novo_estado
 
-            funcao_afd[estado_atual][simbolo] = novo_estado
-
-            if novo_estado not in estados_processados:
-                estados_em_processamento.append(novo_estado)
+                if novo_estado not in estados_processados:
+                    estados_em_processamento.append(novo_estado)
+            else:
+                funcao_afd[estado_atual][simbolo] = None
 
     return funcao_afd
 
@@ -303,7 +304,7 @@ def imprimir_tabela_de_pares(funcao_transicao_afd):
     print("-"*50)
 
 #Marca os pares trivialmente equivalentes (finais e não finais)
-def marcar_pares_trivialmente_equivalentes(funcao_transicao_afd, estados_finais):
+def marcar_pares_trivialmente_nao_equivalentes(funcao_transicao_afd, estados_finais):
     estados = list(funcao_transicao_afd.keys())
     print(f"Estados finais: {sorted(estados_finais)} | Estados: {estados}\n")
 
@@ -356,36 +357,24 @@ def marcar_pares_nao_equivalentes(tabela_minimizacao, funcao_transicao_afd_espac
         for coluna in tabela_minimizacao.columns:
             for linha in linhas:
                 if tabela_minimizacao.at[linha, coluna] == "":
-
                     print(f"Verificando célula: {linha}{coluna}")
-
                     for simbolo in lista_simbolos:
-
                         transicao_linha = funcao_transicao_afd_espacos_vazios[linha][simbolo]
                         transicao_coluna = funcao_transicao_afd_espacos_vazios[coluna][simbolo]
-
                         print(f"Transição ao ler '{simbolo}': {transicao_linha}{transicao_coluna}")
 
-                        # ---------------------------------------------
-                        # 🔥 MODIFICAÇÃO 1: Ignorar apenas AA
-                        # ---------------------------------------------
+                        # Ignorando apenas AA
                         if transicao_linha == transicao_coluna:
                             continue
 
-                        # ---------------------------------------------
-                        # 🔥 MODIFICAÇÃO 2: Verificar se ambos existem
-                        # na lista de estados antes de continuar
-                        # ---------------------------------------------
+                        #Verificando se existem na lista de estados antes de continuar
                         if transicao_linha not in estados or transicao_coluna not in estados:
                             continue
 
-                        # ---------------------------------------------
-                        # 🔥 MODIFICAÇÃO 3 (PRINCIPAL):
-                        # NORMALIZAÇÃO DO PAR
-                        # Garante que P4A = AP4
-                        # Sempre coloca o maior índice como linha
-                        # e o menor como coluna
-                        # ---------------------------------------------
+                        # Normalizações de cada pa
+                        # Por ex: P4A = AP4
+                        # Sempre coloca o maior índice como linha e o menor como coluna
+                        # linha = 1, len(estados) e coluna = 0, len(estados)-1
                         idx1 = estados.index(transicao_linha)
                         idx2 = estados.index(transicao_coluna)
 
@@ -398,10 +387,7 @@ def marcar_pares_nao_equivalentes(tabela_minimizacao, funcao_transicao_afd_espac
 
                         print(f"Par normalizado: {linha_norm}{coluna_norm}")
 
-                        # ---------------------------------------------
-                        # 🔥 MODIFICAÇÃO 4:
-                        # Só consulta a tabela DEPOIS da normalização
-                        # ---------------------------------------------
+
                         if (
                             linha_norm in tabela_minimizacao.index and
                             coluna_norm in tabela_minimizacao.columns
@@ -648,7 +634,7 @@ while True:
             imprimir_tabela_de_pares(funcao_transicao_afd_espacos_vazios)
 
             #Marcando com x os pares trivialmente não equivalentes(finais e não finais)
-            tabela_minimizacao = marcar_pares_trivialmente_equivalentes(funcao_transicao_afd_espacos_vazios, estados_finais)
+            tabela_minimizacao = marcar_pares_trivialmente_nao_equivalentes(funcao_transicao_afd_espacos_vazios, estados_finais)
 
             #Tabela de pares atualizada após marcar os pares não equivalentes            
             tabela_minimizacao_atualizada = marcar_pares_nao_equivalentes(tabela_minimizacao, funcao_transicao_afd_espacos_vazios, lista_simbolos)
@@ -672,6 +658,7 @@ while True:
                 else:
                     exit()
 
+    #===================SAÍDA===================
     elif opcao in [3,6]:
         print("Obrigado por usar o conversor e validador de autômatos do Keven, Camille e Erick")
         exit()
